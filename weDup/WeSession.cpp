@@ -8,11 +8,17 @@ const char *defaultWorkshopocation =
 const char *projects_txt = "PathToMyprojects.txt";
 const char *workshop_txt = "PathToWorkshop.txt";
 const char *WE_txt = "WE.txt";
+const char* zip2pkg_bat = "!zip2pkg.bat";
+const char* zip2pkg_bat = "!zip2pkg.bat";
+const char* pkg2zip_bat = "!pkg2zip.bat";
+const char* pkg2zip_exe = "pkg2zip.exe";
+
 WeSession::WeSession() {
   CheckPaths(defaultProjectsLocation, projects_txt);
   CheckPaths(defaultWorkshopocation, workshop_txt);
   lengthOfWorkshopPath = (int)pathToWorkshop.length() + 1;
   PutintoString();
+  Check_pkg2zip();
 }
 void WeSession::PutintoString() {
   // Putting all recorded projects into a string since
@@ -121,6 +127,16 @@ void WeSession::setPathsFromUser(const char *path_txt) {
   } else {
     throw std::invalid_argument("Invalid txt when writing");
   }
+}
+
+void WeSession::Check_pkg2zip()
+{
+    if (!fs::exists(zip2pkg_bat))
+        throw ((std::string)zip2pkg_bat + "doesn't exist");
+    if(!fs::exists(pkg2zip_bat))
+        throw ((std::string)pkg2zip_bat + "doesn't exist");
+    if(!fs::exists(pkg2zip_exe))
+        throw ((std::string)pkg2zip_exe + "doesn't exist");
 }
 
 std::string WeSession::GetpathToWorkshop() const { return pathToWorkshop; }
