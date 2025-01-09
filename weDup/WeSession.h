@@ -10,11 +10,10 @@ extern const char *defaultWorkshopocation;
 extern const char *projects_txt;
 extern const char *workshop_txt;
 extern const char *WE_txt;
-extern const char* zip2pkg_bat;
-extern const char* pkg2zip_bat;
-extern const char* pkg2zip_exe;
+extern const char *zip2pkg_bat;
+extern const char *pkg2zip_bat;
+extern const char *pkg2zip_exe;
 void IsBadInput();
-namespace fs = std::filesystem;
 enum CopyTypes { choose, copyAll, recordAll, skip };
 
 class WeSession {
@@ -34,7 +33,7 @@ private:
 private:
   void PutintoString();
   void CheckPaths(const char *, const char *);
-  void Writepaths(const char*, const char*);
+  void Writepaths(const char *, const char *);
   void setPathsFromUser(const char *);
   void Check_pkg2zip();
 

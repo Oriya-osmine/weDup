@@ -1,24 +1,24 @@
 #include "WeSession.h"
 #include <windows.h>
 
-using namespace std;
 namespace fs = std::filesystem;
 enum answer { no, yes, alwaysNo, alwaysYes };
 void Start(WeSession paths);
 bool WeExists();
-bool TransferProject(const string &addProject, WeSession &paths);
-void CopyFiles(const string &oldPath, const string &newPath);
+bool TransferProject(const std::string &addProject, WeSession &paths);
+void CopyFiles(const std::string &oldPath, const std::string &newPath);
 void ProcessProjects(WeSession &paths, bool isRecord);
-void DirExists(const string &Directory);
-void Unpkg(const string &oldPathProject, const string &newProjectPath);
-void RunSystemCommands(const string &command);
+void DirExists(const std::string &Directory);
+void Unpkg(const std::string &oldPathProject,
+           const std::string &newProjectPath);
+void RunSystemCommands(const std::string &command);
 void SearchMenu(WeSession &paths);
 bool Search(WeSession &paths);
-void ToLowerLoop(string &toLower);
-string FindTitle(const string &path, const string &project);
-bool CompareTitles(const string &project, const string &toProject);
+void ToLowerLoop(std::string &toLower);
+std::string FindTitle(const std::string &path, const std::string &project);
+bool CompareTitles(const std::string &project, const std::string &toProject);
 
-void AddToWE(const string &project, const string &title,
+void AddToWE(const std::string &project, const std::string &title,
              const WeSession &paths);
 void IsBadInput();
 // project == wallpaper
@@ -63,7 +63,7 @@ bool WeExists() {
     std::ofstream createFile;
     createFile.open(WE_txt);
     createFile.close();
-    string answer;
+    std::string answer;
     std::cout
         << "Would you like to copy all of your current downloaded projects?\n"
         << "Choose an option:\n"
@@ -90,9 +90,9 @@ void ProcessProjects(WeSession &paths, bool isRecord) {
   else
     paths.IsCopyCon();
 
-  string newProject{""};
+  std::string newProject{""};
   for (const auto &entry : fs::directory_iterator(paths.GetpathToWorkshop())) {
-    string pathOfNewProject{entry.path().string()};
+    std::string pathOfNewProject{entry.path().string()};
     int checkLength{static_cast<int>(pathOfNewProject.length() -
                                      paths.getLengthOfWorkshopPath())};
     newProject = {
@@ -106,15 +106,15 @@ void ProcessProjects(WeSession &paths, bool isRecord) {
 
     if (paths.GetIsCopy() == recordAll) {
       if (isRecord && !dontMakeNewLine) {
-        fstream listWE(WE_txt);
-        string title{FindTitle(paths.GetpathToWorkshop(), newProject)};
+        std::fstream listWE(WE_txt);
+        std::string title{FindTitle(paths.GetpathToWorkshop(), newProject)};
         listWE << newProject << " - " << title;
         ++dontMakeNewLine;
         listWE.close();
         continue;
       }
       // if wants to only record all new projects
-      string title{FindTitle(paths.GetpathToWorkshop(), newProject)};
+      std::string title{FindTitle(paths.GetpathToWorkshop(), newProject)};
       AddToWE(newProject, title, paths);
       continue;
     }
@@ -124,11 +124,12 @@ void ProcessProjects(WeSession &paths, bool isRecord) {
   }
 }
 
-bool TransferProject(const string &addProject, WeSession &paths) {
+bool TransferProject(const std::string &addProject, WeSession &paths) {
 
-  string pathToWorkshopProject{paths.GetpathToWorkshop() + "\\" + addProject};
-  string title{FindTitle(paths.GetpathToWorkshop(), addProject)};
-  string newProjectPath{paths.GetPathToMyProjects() + "\\" + title};
+  std::string pathToWorkshopProject{paths.GetpathToWorkshop() + "\\" +
+                                    addProject};
+  std::string title{FindTitle(paths.GetpathToWorkshop(), addProject)};
+  std::string newProjectPath{paths.GetPathToMyProjects() + "\\" + title};
   static std::string ifShow{""};
   std::string isCopy{""};
   switch (paths.GetIsCopy()) {
@@ -212,32 +213,33 @@ bool TransferProject(const string &addProject, WeSession &paths) {
   AddToWE(addProject, title, paths);
   return true;
 }
-void DirExists(const string &Directory) {
+void DirExists(const std::string &Directory) {
   if (fs::exists(Directory)) {
 
     throw("This project's:\n" + Directory +
-          "\nDirectory already exists, this program does not overrride any "
+          "\nDirectory already exists, this program does not override any "
           "directories");
   }
 }
-void CopyFiles(const string &oldPath, const string &newPath) {
+void CopyFiles(const std::string &oldPath, const std::string &newPath) {
   // copies files
   fs::copy(oldPath.c_str(), newPath.c_str(),
            std::filesystem::copy_options::overwrite_existing |
                std::filesystem::copy_options::recursive);
 }
 
-void Unpkg(const string &oldPathProject, const string &newProjectPath) {
+void Unpkg(const std::string &oldPathProject,
+           const std::string &newProjectPath) {
   // gets all the path pkg and zip
   // then uses commands to copy the pkg, unpack it to a zip then uzip it
-  string pathToWorkshopProject_pkg{oldPathProject + "\\scene.pkg"};
-  string newProjectPath_pkg{newProjectPath + "\\scene.pkg"};
-  string pathToWorkshopProject_zip(oldPathProject + "\\scene.zip");
-  string newProjectPath_zip{newProjectPath + "\\scene.zip"};
-  string commandToUnpkg{"pkg2zip.exe -pkg2zip \"" + newProjectPath_pkg + "\" " +
-                        "\"" + newProjectPath_zip + "\""};
-  string commandToUnzip{"tar -xkvf \"" + newProjectPath_zip + "\" -C \"" +
-                        newProjectPath + "\""};
+  std::string pathToWorkshopProject_pkg{oldPathProject + "\\scene.pkg"};
+  std::string newProjectPath_pkg{newProjectPath + "\\scene.pkg"};
+  std::string pathToWorkshopProject_zip(oldPathProject + "\\scene.zip");
+  std::string newProjectPath_zip{newProjectPath + "\\scene.zip"};
+  std::string commandToUnpkg{"pkg2zip.exe -pkg2zip \"" + newProjectPath_pkg +
+                             "\" " + "\"" + newProjectPath_zip + "\""};
+  std::string commandToUnzip{"tar -xkvf \"" + newProjectPath_zip + "\" -C \"" +
+                             newProjectPath + "\""};
   if (!fs::exists(pathToWorkshopProject_pkg)) {
     // if there is no scene.pkg
     if (fs::exists(oldPathProject + "\\gifscene.pkg")) {
@@ -265,7 +267,7 @@ void Unpkg(const string &oldPathProject, const string &newProjectPath) {
   // deletes the .zip and .pkg file as they are no longer needed
 }
 
-void RunSystemCommands(const string &command) {
+void RunSystemCommands(const std::string &command) {
   // creates a child prossesor to run the unzip and upack commands
   // honestly I barely know what is happening in this function
   // but it works
@@ -323,13 +325,13 @@ void SearchMenu(WeSession &paths) {
                      "Returned to search menu\n";
       }
     } else {
-      std::cout << "Invalid command\n";
+      std::cout << "invalid command, please enter again\n";
     }
   }
 }
 
 bool Search(WeSession &paths) {
-  string newProject{""};
+  std::string newProject{""};
   int found{0};
   int copied{0};
   // goes over every project in workshop and then checks title to see if it
@@ -341,12 +343,12 @@ bool Search(WeSession &paths) {
          "for it, you can any language you want\n"
          "Just make sure that your terminal supports it\n";
 
-  string checkProject;
+  std::string checkProject;
   std::getline(std::cin, checkProject);
   IsBadInput();
   ToLowerLoop(checkProject);
   bool isFound{false};
-  string currentLine{""};
+  std::string currentLine{""};
   for (const auto &entry : fs::directory_iterator(paths.GetpathToWorkshop())) {
     // gets the the project's path
     std::string pathOfNewProject{entry.path().string()};
@@ -389,8 +391,8 @@ bool Search(WeSession &paths) {
   }
 
   // if did not found and or chose to not copy every option
-  cout << "Search finished\nCopied projects: " << copied
-       << "\nFound projects: " << found << "\n";
+  std::cout << "Search finished\nCopied projects: " << copied
+            << "\nFound projects: " << found << "\n";
   return isFound;
 }
 void ToLowerLoop(std::string &toLower) {
@@ -402,44 +404,40 @@ void ToLowerLoop(std::string &toLower) {
     }
   }
 }
-string FindTitle(const string &path, const string &project) {
-  string jsonPath{path + "\\" + project + "\\project.json"};
-  ifstream projectName(jsonPath);
-  string currentLine("");
-  while (getline(projectName, currentLine)) {
-    if (currentLine.find("title") == string::npos) {
-      // if it is not the currentLine with the title
-      continue;
+std::string FindTitle(const std::string &path, const std::string &project) {
+  std::string jsonPath{path + "\\" + project + "\\project.json"};
+  std::ifstream projectName(jsonPath);
+  std::string currentLine("");
+  while (std::getline(projectName, currentLine)) {
+    if (currentLine.find("title") != std::string::npos) {
+      ToLowerLoop(currentLine);
+      currentLine = currentLine.substr(12, currentLine.size() - 14);
+      currentLine.erase(
+          std::remove(currentLine.begin(), currentLine.end(), '\"'),
+          currentLine.end()); // removes all /" in case of a " inside the string
+      currentLine.erase(
+          std::remove(currentLine.begin(), currentLine.end(), '\\'),
+          currentLine.end());
+      return currentLine;
     }
-    ToLowerLoop(currentLine);
-    currentLine = currentLine.substr(12, currentLine.size() - 14);
-    currentLine.erase(
-        std::remove(currentLine.begin(), currentLine.end(), '\"'),
-        currentLine.end()); // removes all /" in case of a " inside the string
-    currentLine.erase(std::remove(currentLine.begin(), currentLine.end(), '\\'),
-                      currentLine.end());
-    return currentLine;
   }
   // shouldnt happen but just to make sure
   throw "Invalid ending";
 }
-bool CompareTitles(const string &project, const string &toProject) {
-  if (project.find(toProject) != string::npos) {
-    return true;
-  }
-  return false;
+bool CompareTitles(const std::string &project, const std::string &toProject) {
+  return project.find(toProject) != std::string::npos;
 }
 void IsBadInput() {
   if (std::cin.fail()) {
-    throw "ERROR - Invalid input";
+    throw "Invalid input";
   }
 }
-void AddToWE(const string &project, const string &title,
+void AddToWE(const std::string &project, const std::string &title,
              const WeSession &paths) {
   if (!paths.SearchIfRecorded(project)) {
-    fstream listWE2("WE.txt", ios::app);
+    std::fstream listWE2("WE.txt", std::ios::app);
     listWE2 << "\n" << project << "-" << title;
     listWE2.close();
   }
-  cout << "recorded in WE.txt\n";
+  std::cout << "recorded in WE.txt\n";
 }

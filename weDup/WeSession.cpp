@@ -8,10 +8,9 @@ const char *defaultWorkshopocation =
 const char *projects_txt = "PathToMyprojects.txt";
 const char *workshop_txt = "PathToWorkshop.txt";
 const char *WE_txt = "WE.txt";
-const char* zip2pkg_bat = "!zip2pkg.bat";
-const char* zip2pkg_bat = "!zip2pkg.bat";
-const char* pkg2zip_bat = "!pkg2zip.bat";
-const char* pkg2zip_exe = "pkg2zip.exe";
+const char *zip2pkg_bat = "!zip2pkg.bat";
+const char *pkg2zip_bat = "!pkg2zip.bat";
+const char *pkg2zip_exe = "pkg2zip.exe";
 
 WeSession::WeSession() {
   CheckPaths(defaultProjectsLocation, projects_txt);
@@ -43,9 +42,9 @@ void WeSession::CheckPaths(const char *path, const char *path_txt) {
     std::cout << "file does not exist, creating file " << path_txt << "...\n";
 
     if (std::filesystem::exists(path))
-        Writepaths(path, path_txt);
+      Writepaths(path, path_txt);
     else {
-        setPathsFromUser(path_txt);
+      setPathsFromUser(path_txt);
     }
   } else {
     // reads the path from PathTo(MyProjects/workshop).txt
@@ -64,35 +63,32 @@ void WeSession::CheckPaths(const char *path, const char *path_txt) {
     }
   }
 }
-void WeSession::Writepaths(const char* path, const char* path_txt) {
-    std::string MpOrWs = path_txt == projects_txt ? "Myprojects" : "Workshop";
-    std::cout
-        << "We have detected your" << MpOrWs  << " content location is in\n"
-        << defaultProjectsLocation
-        << "\nEnter: \"yes\" if that is correct and \"no\" if it is not/you "
-        "want to choose a different path\n";
+void WeSession::Writepaths(const char *path, const char *path_txt) {
+  std::string MpOrWs = path_txt == projects_txt ? "Myprojects" : "Workshop";
+  std::cout
+      << "We have detected your" << MpOrWs << " content location is in\n"
+      << defaultProjectsLocation
+      << "\nEnter: \"yes\" if that is correct and \"no\" if it is not/you "
+         "want to choose a different path\n";
 
-    std::string answer{ "" };
+  std::string answer{""};
 
-    while (answer != "yes" && answer != "no") {
-        std::getline(std::cin, answer);
-        void IsBadInput();
-        if (answer == "no") {
-            setPathsFromUser(path_txt);
-            return;
+  while (answer != "yes" && answer != "no") {
+    std::getline(std::cin, answer);
+    void IsBadInput();
+    if (answer == "no") {
+      setPathsFromUser(path_txt);
+      return;
 
-        }
-        else if (answer == "yes") {
-            std::ofstream Myprojects(path_txt, std::ios::out);
-            Myprojects << path;
-            Myprojects.close();
-            CheckPaths(path, path_txt);
-        }
-        else {
-            std::cout
-                << "invalid command, please enter again\n";
-        }
+    } else if (answer == "yes") {
+      std::ofstream Myprojects(path_txt, std::ios::out);
+      Myprojects << path;
+      Myprojects.close();
+      CheckPaths(path, path_txt);
+    } else {
+      std::cout << "invalid command, please enter again\n";
     }
+  }
 }
 void WeSession::setPathsFromUser(const char *path_txt) {
   // gets the path and puts it in PathTo(Myprojects/Workshop).txt
@@ -102,11 +98,12 @@ void WeSession::setPathsFromUser(const char *path_txt) {
            "this:\n"
         << defaultProjectsLocation
         << "\nYou can check this yourself by going to wallpaper engine and "
-        << "right clicking on a wallpaper you CREATED(on this device) for wallpaper "
+        << "right clicking on a wallpaper you CREATED(on this device) for "
+           "wallpaper "
         << "engine and choose 'open in explorer' and then go back one "
         << "folder (the folder you go back to should be "
         << "'myprojects') copy the path and paste it here\n";
-    getline(std::cin, pathToMyProjects);
+    std::getline(std::cin, pathToMyProjects);
     std::ofstream getPaths(path_txt, std::ios::out);
     getPaths << pathToMyProjects;
     getPaths.close();
@@ -120,7 +117,7 @@ void WeSession::setPathsFromUser(const char *path_txt) {
            "and choose 'open in explorer'and then go back one "
            "folder (the folder you go back to should be '431960') "
            "copy the path and paste it here\n";
-    getline(std::cin, pathToWorkshop);
+    std::getline(std::cin, pathToWorkshop);
     std::ofstream getPaths(path_txt, std::ios::out);
     getPaths << pathToWorkshop;
     getPaths.close();
@@ -129,14 +126,13 @@ void WeSession::setPathsFromUser(const char *path_txt) {
   }
 }
 
-void WeSession::Check_pkg2zip()
-{
-    if (!fs::exists(zip2pkg_bat))
-        throw ((std::string)zip2pkg_bat + "doesn't exist");
-    if(!fs::exists(pkg2zip_bat))
-        throw ((std::string)pkg2zip_bat + "doesn't exist");
-    if(!fs::exists(pkg2zip_exe))
-        throw ((std::string)pkg2zip_exe + "doesn't exist");
+void WeSession::Check_pkg2zip() {
+  if (!fs::exists(zip2pkg_bat))
+    throw((std::string)zip2pkg_bat + "doesn't exist");
+  if (!fs::exists(pkg2zip_bat))
+    throw((std::string)pkg2zip_bat + "doesn't exist");
+  if (!fs::exists(pkg2zip_exe))
+    throw((std::string)pkg2zip_exe + "doesn't exist");
 }
 
 std::string WeSession::GetpathToWorkshop() const { return pathToWorkshop; }
@@ -149,33 +145,33 @@ int WeSession::GetProjectsAdded() const { return projectsAdded; }
 void WeSession::AddProjectsAdded() { ++projectsAdded; }
 void WeSession::subtractprojectsAdded() { --projectsAdded; }
 void WeSession::IsCopyCon() {
-    std::cout << "Choose an option:\n"
-        << "1. 'choose' to manually select what new projects to copy\n"
-        << "2. 'copy' to copy every new project\n"
-        << "3. 'record' to record all new projects\n";
-    std::string option{ "" };
-    while (option != "copy" && option != "choose" && option != "record") {
-        std::getline(std::cin, option);
-        IsBadInput();
-        if (option == "choose") {
-            isCopy = choose;
-            break;
-        }
-        else if (option == "copy") {
-            isCopy = copyAll;
-            break;
-        }
-        else if (option == "record") {
-            isCopy = recordAll;
-            break;
-        }
-        std::cout << "Invalid option, please try again.\n";
-        
+  std::cout << "Choose an option:\n"
+            << "1. 'choose' to manually select what new projects to copy\n"
+            << "2. 'copy' to copy every new project\n"
+            << "3. 'record' to record all new projects\n";
+  std::string option{""};
+  while (option != "copy" && option != "choose" && option != "record") {
+    std::getline(std::cin, option);
+    IsBadInput();
+    if (option == "choose") {
+      isCopy = choose;
+      break;
+    } else if (option == "copy") {
+      isCopy = copyAll;
+      break;
+    } else if (option == "record") {
+      isCopy = recordAll;
+      break;
     }
+    std::cout << "Invalid option, please try again.\n";
+  }
 }
 
 void WeSession::SetIsCopy(const CopyTypes &set) { isCopy = set; }
 int WeSession::GetIsCopy() const { return isCopy; }
 bool WeSession::SearchIfRecorded(const std::string &find) const {
-  return std::any_of(recordedItems.begin(), recordedItems.end(),[&](const std::string &item) {return item.find(find) != std::string::npos;});
+  return std::any_of(recordedItems.begin(), recordedItems.end(),
+                     [&](const std::string &item) {
+                       return item.find(find) != std::string::npos;
+                     });
 }
