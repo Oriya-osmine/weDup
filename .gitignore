@@ -48,7 +48,4 @@
 *.wsuo
 *.sqlite
 *.txt
-*.filters
-*.user
-*.vcxproj
 *.bat
