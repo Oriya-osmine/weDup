@@ -16,11 +16,11 @@ WeSession::WeSession() {
   CheckPaths(defaultProjectsLocation, projects_txt);
   CheckPaths(defaultWorkshopocation, workshop_txt);
   lengthOfWorkshopPath = (int)pathToWorkshop.length() + 1;
-  PutintoString();
+  PutintoSet();
   Check_pkg2zip();
 }
-void WeSession::PutintoString() {
-  // Putting all recorded projects into a string since
+void WeSession::PutintoSet() {
+  // Putting all recorded projects into a set of strings since
   // it is much faster to check if a string is in another string
   // than to open a file, go all over his lines and check if the string matches
   if (!fs::exists(WE_txt)) {
@@ -29,7 +29,7 @@ void WeSession::PutintoString() {
   std::fstream weFile(WE_txt);
   std::string currentLine{""};
   if (!weFile) {
-    throw std::ios_base::failure("Failed to open WE.txt");
+    throw std::runtime_error("Failed to open WE.txt");
   }
   while (std::getline(weFile, currentLine)) {
     AddItem(currentLine);
@@ -59,7 +59,7 @@ void WeSession::CheckPaths(const char *path, const char *path_txt) {
                             std::istreambuf_iterator<char>());
       WE_paths.close();
     } else {
-      throw "Invalid txt when reading";
+      throw std::invalid_argument("Invalid txt when reading");
     }
   }
 }
@@ -68,19 +68,19 @@ void WeSession::Writepaths(const char *path, const char *path_txt) {
   std::cout
       << "We have detected your" << MpOrWs << " content location is in\n"
       << defaultProjectsLocation
-      << "\nEnter: \"yes\" if that is correct and \"no\" if it is not/you "
-         "want to choose a different path\n";
+      << "\nChoose an option:\n"
+      << "1. 'yes' if correct \n"
+      << "2. 'no' if wrong, allows you to enter the path yourself\n";
 
-  std::string answer{""};
-
-  while (answer != "yes" && answer != "no") {
-    std::getline(std::cin, answer);
+  std::string option{""};
+  while (option != "yes" && option != "no") {
+    std::getline(std::cin, option);
     void IsBadInput();
-    if (answer == "no") {
+    ToLowerLoop(option);
+    if (option == "no") {
       setPathsFromUser(path_txt);
       return;
-
-    } else if (answer == "yes") {
+    } else if (option == "yes") {
       std::ofstream Myprojects(path_txt, std::ios::out);
       Myprojects << path;
       Myprojects.close();
@@ -94,7 +94,7 @@ void WeSession::setPathsFromUser(const char *path_txt) {
   // gets the path and puts it in PathTo(Myprojects/Workshop).txt
   if (path_txt == projects_txt) {
     std::cout
-        << "Enter: your projects steam path \nshould look something like "
+        << "Enter your projects steam path \nshould look something like "
            "this:\n"
         << defaultProjectsLocation
         << "\nYou can check this yourself by going to wallpaper engine and "
@@ -109,7 +109,7 @@ void WeSession::setPathsFromUser(const char *path_txt) {
     getPaths.close();
   } else if (path_txt == workshop_txt) {
     std::cout
-        << "Enter: your workshop path it should look something like "
+        << "Enter your workshop path it should look something like "
            "this:\n"
         << defaultWorkshopocation
         << "\nYou can check this yourself by going to wallpaper engine "
@@ -128,11 +128,11 @@ void WeSession::setPathsFromUser(const char *path_txt) {
 
 void WeSession::Check_pkg2zip() {
   if (!fs::exists(zip2pkg_bat))
-    throw((std::string)zip2pkg_bat + "doesn't exist");
+    throw std::runtime_error((std::string)zip2pkg_bat + "doesn't exist");
   if (!fs::exists(pkg2zip_bat))
-    throw((std::string)pkg2zip_bat + "doesn't exist");
+    throw std::runtime_error((std::string)pkg2zip_bat + "doesn't exist");
   if (!fs::exists(pkg2zip_exe))
-    throw((std::string)pkg2zip_exe + "doesn't exist");
+    throw std::runtime_error((std::string)pkg2zip_exe + "doesn't exist");
 }
 
 std::string WeSession::GetpathToWorkshop() const { return pathToWorkshop; }
@@ -153,6 +153,7 @@ void WeSession::IsCopyCon() {
   while (option != "copy" && option != "choose" && option != "record") {
     std::getline(std::cin, option);
     IsBadInput();
+    ToLowerLoop(option);
     if (option == "choose") {
       isCopy = choose;
       break;

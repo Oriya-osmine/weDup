@@ -4,6 +4,8 @@
 #include <iostream>
 #include <set>
 #include <string>
+#include <utility>
+#include <windows.h>
 
 extern const char *defaultProjectsLocation;
 extern const char *defaultWorkshopocation;
@@ -13,6 +15,7 @@ extern const char *WE_txt;
 extern const char *zip2pkg_bat;
 extern const char *pkg2zip_bat;
 extern const char *pkg2zip_exe;
+extern void ToLowerLoop(std::string& toLower);
 void IsBadInput();
 enum CopyTypes { choose, copyAll, recordAll, skip };
 
@@ -31,7 +34,7 @@ private:
   CopyTypes isCopy = copyAll;
 
 private:
-  void PutintoString();
+  void PutintoSet();
   void CheckPaths(const char *, const char *);
   void Writepaths(const char *, const char *);
   void setPathsFromUser(const char *);
