@@ -25,6 +25,8 @@
 *.la
 *.a
 *.lib
+*.ipdb
+*.iobg
 
 # Executables
 *.exe
