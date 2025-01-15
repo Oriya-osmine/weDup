@@ -1,6 +1,6 @@
 #include "WeSession.h"
 #include <windows.h>
-
+#include <filesystem>
 namespace fs = std::filesystem;
 enum answer { no, yes, alwaysNo, alwaysYes };
 void Start(WeSession paths);
