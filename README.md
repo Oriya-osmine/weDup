@@ -10,13 +10,15 @@ This project uses [Wallpaper Engine Pkg to Zip](https://github.com/TheRioMiner/W
 ---
 
 ## 🛠️ Steps to Use  
-1. **Download** [Wallpaper Engine Pkg to Zip (latest release)](https://github.com/TheRioMiner/Wallpaper-Engine-Pkg-to-Zip/releases).  
-2. **Rename** the `Wallpaper Engine Pkg To Zip.exe` file to `pkg2zip.exe`.  
-3. **Ensure** the following files are in the same directory as `weDup`:  
-   - `pkg2zip.exe`  
-   - `!zip2pkg.bat`  
-   - `!pkg2zip.bat`  
-4. **Run** `weDup`!  
+
+1. **Download** [This project weDup(latest release)](https://github.com/Oriya-osmine/weDup/releases).
+2. **Download** [Wallpaper Engine Pkg to Zip (latest release)](https://github.com/TheRioMiner/Wallpaper-Engine-Pkg-to-Zip/releases).  
+3. **Rename** the `Wallpaper Engine Pkg To Zip.exe` file to `pkg2zip.exe`.  
+4. **Ensure** the following files are in the same directory as `weDup.exe`:  
+   - `pkg2zip.exe`.  
+   - `!zip2pkg.bat`.  
+   - `!pkg2zip.bat`.  
+5. **Run** `weDup.exe`.  
 
 ---
 
