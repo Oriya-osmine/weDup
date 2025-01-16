@@ -51,6 +51,6 @@ public:
   void subtractprojectsAdded();
   void AddProjectsAdded();
   int getLengthOfWorkshopPath() const;
-  void AddItem(std::string);
+  void AddItem(const std::string& addProject);
   bool SearchIfRecorded(const std::string &) const;
 };

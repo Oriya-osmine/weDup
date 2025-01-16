@@ -2,7 +2,7 @@
 
 namespace fs = std::filesystem;
 enum answer { no, yes, alwaysNo, alwaysYes };
-void Start(WeSession paths);
+void Start(WeSession &paths);
 void WeExists();
 bool TransferProject(const std::string &addProject, WeSession &paths);
 void CopyFolder(const std::string &oldPath, const std::string &newPath);
@@ -36,7 +36,7 @@ int main() {
   std::cin.get();
 }
 
-void Start(WeSession paths) {
+void Start(WeSession &paths) {
   WeExists();
   std::cout << "sending you to search menu...\n";
   SearchMenu(paths);

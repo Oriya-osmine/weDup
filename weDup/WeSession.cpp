@@ -137,7 +137,7 @@ void WeSession::Check_pkg2zip() {
 
 std::string WeSession::GetpathToWorkshop() const { return pathToWorkshop; }
 std::string WeSession::GetPathToMyProjects() const { return pathToMyProjects; }
-void WeSession::AddItem(std::string addProject) {
+void WeSession::AddItem(const std::string& addProject) {
   recordedItems.insert(addProject);
 }
 int WeSession::getLengthOfWorkshopPath() const { return lengthOfWorkshopPath; }
