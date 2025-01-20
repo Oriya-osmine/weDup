@@ -20,9 +20,6 @@ WeSession::WeSession() {
   Check_pkg2zip();
 }
 void WeSession::PutintoSet() {
-  // Putting all recorded projects into a set of strings since
-  // it is much faster to check if a string is in another string
-  // than to open a file, go all over his lines and check if the string matches
   if (!fs::exists(WE_txt)) {
     return;
   }
@@ -47,27 +44,20 @@ void WeSession::CheckPaths(const char *path, const char *path_txt) {
       setPathsFromUser(path_txt);
     }
   } else {
-    // reads the path from PathTo(MyProjects/workshop).txt
-    if (path_txt == projects_txt) {
-      std::fstream WE_paths(path_txt, std::ios::in);
-      pathToMyProjects.assign(std::istreambuf_iterator<char>(WE_paths),
-                              std::istreambuf_iterator<char>());
-      WE_paths.close();
-    } else if (path_txt == workshop_txt) {
-      std::fstream WE_paths(path_txt, std::ios::in);
-      pathToWorkshop.assign(std::istreambuf_iterator<char>(WE_paths),
-                            std::istreambuf_iterator<char>());
-      WE_paths.close();
-    } else {
-      throw std::invalid_argument("Invalid txt when reading");
-    }
+    std::fstream WE_paths(path_txt, std::ios::in);
+    path_txt == projects_txt ? pathToMyProjects.assign(std::istreambuf_iterator<char>(WE_paths),
+        std::istreambuf_iterator<char>()) : pathToWorkshop.assign(std::istreambuf_iterator<char>(WE_paths),
+            std::istreambuf_iterator<char>());
+    WE_paths.close();
   }
 }
 void WeSession::Writepaths(const char *path, const char *path_txt) {
   std::string MpOrWs = path_txt == projects_txt ? "Myprojects" : "Workshop";
+  std::string DefaultMporWslocation = path_txt == projects_txt ? defaultProjectsLocation : defaultWorkshopocation;
+
   std::cout
       << "We have detected your" << MpOrWs << " content location is in\n"
-      << defaultProjectsLocation
+      << DefaultMporWslocation
       << "\nChoose an option:\n"
       << "1. 'yes' if correct \n"
       << "2. 'no' if wrong, allows you to enter the path yourself\n";

@@ -2,26 +2,23 @@
 
 namespace fs = std::filesystem;
 enum answer { no, yes, alwaysNo, alwaysYes };
-void Start(WeSession &paths);
+void Start(WeSession&);
 void WeExists();
-bool TransferProject(const std::string &addProject, WeSession &paths);
-void CopyFolder(const std::string &oldPath, const std::string &newPath);
-void ProcessProjects(WeSession &paths);
-void DirExists(const std::string &Directory);
-void Unpkg(const std::string &oldPathProject,
-           const std::string &newProjectPath);
-void NotCopying(WeSession &paths, const std::string &addProject,
-                const std::string &title);
-void RunSystemCommands(const std::string &command);
-void SearchMenu(WeSession &paths);
-bool Search(WeSession &paths);
+bool CopyProject(const std::string&, WeSession&);
+void CopyFolder(const std::string&, const std::string&);
+void ProcessProjects(WeSession&);
+void DirExists(const std::string&);
+void Unpkg(const std::string&, const std::string&);
+void NotCopying(WeSession&, const std::string&, const std::string&);
+void RunSystemCommands(const std::string&);
+void SearchMenu(WeSession&);
+void Search(WeSession&, const char*&);
 const char* SearchTitleorDescription();
-void ToLowerLoop(std::string &toLower);
-std::pair<std::string, std::string> FindTitleAndDescription(const std::string& path, const std::string& project);
-bool CompareTitles(const std::string &project, const std::string &toProject);
+void ToLowerLoop(std::string&);
+std::pair<std::string, std::string> FindTitleAndDescription(const std::string&, const std::string&);
+bool CompareTitles(const std::string_view, const std::string_view);
 
-void AddToWE(const std::string &project, const std::string &title,
-             WeSession &paths);
+void AddToWE(const std::string&, const std::string&, WeSession&);
 void IsBadInput();
 // project == wallpaper
 int main() {
@@ -63,8 +60,8 @@ void WeExists() {
     createWe.close();
   }
 }
-// "Main Menu"
 void ProcessProjects(WeSession &paths) {
+    // "Main Menu"
   paths.IsCopyCon();
   std::string newProject{""};
   for (const auto &entry : fs::directory_iterator(paths.GetpathToWorkshop())) {
@@ -77,16 +74,17 @@ void ProcessProjects(WeSession &paths) {
     // and inserts it in newProject(this is for cleaner look mostly)
 
     if (paths.GetIsCopy() == recordAll) {
-      std::string title{FindTitleAndDescription(paths.GetpathToWorkshop(), newProject).first};
-      AddToWE(newProject, title, paths);
-    } else if (!paths.SearchIfRecorded(newProject) &&
-               TransferProject(newProject, paths)) {
-      paths.AddProjectsAdded();
+        if (!paths.SearchIfRecorded(newProject)) {
+            std::string title{ FindTitleAndDescription(paths.GetpathToWorkshop(), newProject).first };
+            AddToWE(newProject, title, paths);
+        }
     }
+    else if (!paths.SearchIfRecorded(newProject))
+        CopyProject(newProject, paths);
   }
 }
 
-bool TransferProject(const std::string &addProject, WeSession &paths) {
+bool CopyProject(const std::string &addProject, WeSession &paths) {
 
   std::string pathToWorkshopProject{paths.GetpathToWorkshop() + "\\" +
                                     addProject};
@@ -129,7 +127,7 @@ bool TransferProject(const std::string &addProject, WeSession &paths) {
     throw std::invalid_argument("Invalid ending in recordAll path");
   }
   default: {
-    throw std::invalid_argument("Invalid isCopy value");
+    throw std::invalid_argument("Invalid IsCopy value");
   }
   }
 
@@ -140,6 +138,7 @@ bool TransferProject(const std::string &addProject, WeSession &paths) {
   Unpkg(pathToWorkshopProject, newProjectPath);
 
   AddToWE(addProject, title, paths);
+  paths.AddProjectsAdded();
   return true;
 }
 void DirExists(const std::string &Directory) {
@@ -287,9 +286,9 @@ void SearchMenu(WeSession &paths) {
       break;
     } else if (option == "copy" || option == "choose") {
       paths.SetIsCopy(option == "copy" ? copyAll : choose);
-      if (!Search(paths)) {
-        std::cout << "Project not found\n";
-      }
+      const char* whereToSearch = SearchTitleorDescription();
+      Search(paths, whereToSearch);
+
       std::cout << "Returning to search menu\n";
       option = "";
       std::cout << "Choose an option:\n"
@@ -304,13 +303,12 @@ void SearchMenu(WeSession &paths) {
   }
 }
 
-bool Search(WeSession &paths) {
+void Search(WeSession &paths, const char * &whereToSearch) {
   std::string newProject{""};
   std::pair<std::string, std::string> tmpcheckProject{"", ""};
   int found{0};
   int copied{0};
   bool matchFound = false;
-  static const char* whereToSearch = SearchTitleorDescription();
   std::cout
       << "Enter the name of the wallpaper you want to copy and I'll Search "
          "for it, you can any language you want\n"
@@ -330,16 +328,12 @@ bool Search(WeSession &paths) {
     ToLowerLoop(tmpcheckProject.second);
     matchFound = (whereToSearch == "Title" && CompareTitles(tmpcheckProject.first, checkProject)) ||
         (whereToSearch == "Description" && CompareTitles(tmpcheckProject.second, checkProject)) ||
-        (whereToSearch == "TitleAndDescription" && (CompareTitles(tmpcheckProject.first, checkProject) || CompareTitles(tmpcheckProject.second, checkProject)));
+        (whereToSearch == "TitleAndDescription" && (CompareTitles(tmpcheckProject.first, checkProject)
+            || CompareTitles(tmpcheckProject.second, checkProject)));
     if (matchFound) {
       ++found;
-      // if found a match
       if (paths.GetIsCopy() == choose || paths.GetIsCopy() == copyAll) {
-        if (TransferProject(newProject, paths)) {
-          // if it does not exist yet then copy it and
-          // add one to number of added proejcts and insert it to list
-          // then returns the newly added project
-          paths.AddProjectsAdded();
+        if (CopyProject(newProject, paths)) {
           ++copied;
         }
       } else
@@ -348,10 +342,8 @@ bool Search(WeSession &paths) {
     }
   }
 
-  // if did not found and or chose to not copy every option
-  std::cout << "Search finished\nCopied projects: " << copied
-            << "\nFound projects: " << found << "\n";
-  return found;
+  std::cout << "Search finished\Projects found: " << copied
+            << "\Projects copied: " << found << "\n";
 }
 const char * SearchTitleorDescription() {
     std::cout << "Choose what to search for:\n"
@@ -466,8 +458,8 @@ std::pair<std::string, std::string> FindTitleAndDescription(const std::string& p
     throw std::invalid_argument("Invalid Ending: Title not found in " + jsonPath); 
 }
 
-bool CompareTitles(const std::string &project, const std::string &toProject) {
-  return project.find(toProject) != std::string::npos;
+bool CompareTitles(std::string_view project, std::string_view toProject) {
+    return project.find(toProject) != std::string_view::npos;
 }
 void IsBadInput() {
   if (std::cin.fail()) {
@@ -476,13 +468,12 @@ void IsBadInput() {
 }
 void AddToWE(const std::string &project, const std::string &title,
              WeSession &paths) {
-  if (!paths.SearchIfRecorded(project)) {
-    paths.AddItem(project);
-    std::fstream addToWe(WE_txt, std::ios::app);
-    if (!addToWe) {
-        throw std::runtime_error("Failed to open WE.txt");
-    }
-    addToWe << "\n" << project << " - " << title;
-    addToWe.close();
-  }
+   paths.AddItem(project);
+   std::fstream addToWe(WE_txt, std::ios::app);
+   if (!addToWe) {
+       throw std::runtime_error("Failed to open WE.txt");
+   }
+   addToWe << "\n" << project << " - " << title;
+   addToWe.close();
+
 }

@@ -23,14 +23,14 @@ class WeSession {
 private:
   std::string pathToWorkshop{""};
   std::string pathToMyProjects{""};
-  // Used to check if the project already exists, much faster than reading a
+  // To check if the project already exists, much faster than reading a
   // file every time
   std::set<std::string> recordedItems;
   // To only use the number of the project instead of the whole path
   int lengthOfWorkshopPath;
-  // Used to check if there are wallaper that were added
-  // and the number of them to wallpaper engine
+  // To see the number of projects added to WE
   int projectsAdded{0};
+  // To decide what do to when found a new project
   CopyTypes isCopy = copyAll;
 
 private:
@@ -45,12 +45,12 @@ public:
   void IsCopyCon();
   std::string GetpathToWorkshop() const;
   std::string GetPathToMyProjects() const;
-  void SetIsCopy(const CopyTypes &set);
+  void SetIsCopy(const CopyTypes &);
   int GetIsCopy() const;
   int GetProjectsAdded() const;
   void subtractprojectsAdded();
   void AddProjectsAdded();
   int getLengthOfWorkshopPath() const;
-  void AddItem(const std::string& addProject);
+  void AddItem(const std::string&);
   bool SearchIfRecorded(const std::string &) const;
 };
