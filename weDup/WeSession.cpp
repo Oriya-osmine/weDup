@@ -1,88 +1,96 @@
 #include "WeSession.h"
 namespace fs = std::filesystem;
-const char *defaultProjectsLocation =
+const char *const defaultProjectsLocation =
     "C:\\Program Files "
     "(x86)\\Steam\\SteamApps\\common\\wallpaper_engine\\projects\\myprojects";
-const char *defaultWorkshopocation =
+const char *const defaultWorkshopocation =
     "C:\\Program Files (x86)\\Steam\\SteamApps\\workshop\\content\\431960";
-const char *projects_txt = "PathToMyprojects.txt";
-const char *workshop_txt = "PathToWorkshop.txt";
-const char *WE_txt = "WE.txt";
-const char *zip2pkg_bat = "!zip2pkg.bat";
-const char *pkg2zip_bat = "!pkg2zip.bat";
-const char *pkg2zip_exe = "pkg2zip.exe";
+const char *const projectsTXT = "PathToMyprojects.txt";
+const char *const workshopTXT = "PathToWorkshop.txt";
+const char *const WeTXT = "WE.txt";
+const char *const zip2pkgBAT = "!zip2pkg.bat";
+const char *const pkg2zipBAT = "!pkg2zip.bat";
+const char *const pkg2zipEXE = "pkg2zip.exe";
 
 WeSession::WeSession() {
-  CheckPaths(defaultProjectsLocation, projects_txt);
-  CheckPaths(defaultWorkshopocation, workshop_txt);
-  lengthOfWorkshopPath = (int)pathToWorkshop.length() + 1;
+  CheckPaths(defaultProjectsLocation, projectsTXT);
+  CheckPaths(defaultWorkshopocation, workshopTXT);
+  lengthOfWorkshopPath = (static_cast<int>(pathToWorkshop.length()) + 1);
   PutintoSet();
-  Check_pkg2zip();
+  CheckPKG2ZIP();
 }
 void WeSession::PutintoSet() {
-  if (!fs::exists(WE_txt)) {
+  if (!fs::exists(WeTXT)) {
     return;
   }
-  std::fstream weFile(WE_txt);
+  std::fstream WeFile(WeTXT);
   std::string currentLine{""};
-  if (!weFile) {
+  if (!WeFile) {
     throw std::runtime_error("Failed to open WE.txt");
   }
-  while (std::getline(weFile, currentLine)) {
+  while (std::getline(WeFile, currentLine)) {
     AddItem(currentLine);
   }
-  weFile.close();
+  WeFile.close();
 }
-void WeSession::CheckPaths(const char *path, const char *path_txt) {
+void WeSession::CheckPaths(const char *const path, const char *const pathTXT) {
 
-  if (!fs::exists(path_txt)) {
-    std::cout << "file does not exist, creating file " << path_txt << "...\n";
+  if (!fs::exists(pathTXT)) {
+    std::cout << "file does not exist, creating file " << pathTXT << "...\n";
 
     if (std::filesystem::exists(path))
-      Writepaths(path, path_txt);
+      Writepaths(path, pathTXT);
     else {
-      setPathsFromUser(path_txt);
+      setPathsFromUser(pathTXT);
     }
   } else {
-    std::fstream WE_paths(path_txt, std::ios::in);
-    path_txt == projects_txt ? pathToMyProjects.assign(std::istreambuf_iterator<char>(WE_paths),
-        std::istreambuf_iterator<char>()) : pathToWorkshop.assign(std::istreambuf_iterator<char>(WE_paths),
-            std::istreambuf_iterator<char>());
-    WE_paths.close();
+    std::fstream WePaths(pathTXT, std::ios::in);
+    if (!WePaths) {
+        throw std::runtime_error("Failed to open " + std::string(pathTXT));
+    }
+    pathTXT == projectsTXT
+        ? pathToMyProjects.assign(std::istreambuf_iterator<char>(WePaths),
+                                  std::istreambuf_iterator<char>())
+        : pathToWorkshop.assign(std::istreambuf_iterator<char>(WePaths),
+                                std::istreambuf_iterator<char>());
+    WePaths.close();
   }
 }
-void WeSession::Writepaths(const char *path, const char *path_txt) {
-  std::string MpOrWs = path_txt == projects_txt ? "Myprojects" : "Workshop";
-  std::string DefaultMporWslocation = path_txt == projects_txt ? defaultProjectsLocation : defaultWorkshopocation;
+void WeSession::Writepaths(const char *const path, const char *const pathTXT) {
+  std::string MpOrWs = pathTXT == projectsTXT ? "Myprojects" : "Workshop";
+  std::string DefaultMporWslocation = pathTXT == projectsTXT
+                                          ? defaultProjectsLocation
+                                          : defaultWorkshopocation;
 
-  std::cout
-      << "We have detected your" << MpOrWs << " content location is in\n"
-      << DefaultMporWslocation
-      << "\nChoose an option:\n"
-      << "1. 'yes' if correct \n"
-      << "2. 'no' if wrong, allows you to enter the path yourself\n";
+  std::cout << "We have detected your" << MpOrWs << " content location is in\n"
+            << DefaultMporWslocation << "\nChoose an option:\n"
+            << "1. 'yes' if correct \n"
+            << "2. 'no' if wrong, allows you to enter the path yourself\n";
 
   std::string option{""};
   while (option != "yes" && option != "no") {
     std::getline(std::cin, option);
-    void IsBadInput();
+    IsBadInput();
     ToLowerLoop(option);
     if (option == "no") {
-      setPathsFromUser(path_txt);
+      setPathsFromUser(pathTXT);
       return;
     } else if (option == "yes") {
-      std::ofstream Myprojects(path_txt, std::ios::out);
-      Myprojects << path;
-      Myprojects.close();
-      CheckPaths(path, path_txt);
+      std::ofstream WePaths(pathTXT, std::ios::out);
+      if (!WePaths) {
+          throw std::runtime_error("Failed to open " + std::string(pathTXT));
+      }
+      WePaths << path;
+      WePaths.close();
+      CheckPaths(path, pathTXT);
     } else {
       std::cout << "invalid command, please enter again\n";
     }
   }
 }
-void WeSession::setPathsFromUser(const char *path_txt) {
+void WeSession::setPathsFromUser(const char *const pathTXT) {
   // gets the path and puts it in PathTo(Myprojects/Workshop).txt
-  if (path_txt == projects_txt) {
+  if (pathTXT == projectsTXT) {
     std::cout
         << "Enter your projects steam path \nshould look something like "
            "this:\n"
@@ -94,10 +102,13 @@ void WeSession::setPathsFromUser(const char *path_txt) {
         << "folder (the folder you go back to should be "
         << "'myprojects') copy the path and paste it here\n";
     std::getline(std::cin, pathToMyProjects);
-    std::ofstream getPaths(path_txt, std::ios::out);
-    getPaths << pathToMyProjects;
-    getPaths.close();
-  } else if (path_txt == workshop_txt) {
+    std::ofstream WePaths(pathTXT, std::ios::out);
+    if (!WePaths) {
+        throw std::runtime_error("Failed to open " + std::string(pathTXT));
+    }
+    WePaths << pathToMyProjects;
+    WePaths.close();
+  } else if (pathTXT == workshopTXT) {
     std::cout
         << "Enter your workshop path it should look something like "
            "this:\n"
@@ -108,27 +119,30 @@ void WeSession::setPathsFromUser(const char *path_txt) {
            "folder (the folder you go back to should be '431960') "
            "copy the path and paste it here\n";
     std::getline(std::cin, pathToWorkshop);
-    std::ofstream getPaths(path_txt, std::ios::out);
-    getPaths << pathToWorkshop;
-    getPaths.close();
+    std::ofstream WePaths(pathTXT, std::ios::out);
+    if (!WePaths) {
+        throw std::runtime_error("Failed to open " + std::string(pathTXT));
+    }
+    WePaths << pathToWorkshop;
+    WePaths.close();
   } else {
     throw std::invalid_argument("Invalid txt when writing");
   }
 }
 
-void WeSession::Check_pkg2zip() {
-  if (!fs::exists(zip2pkg_bat))
-    throw std::runtime_error((std::string)zip2pkg_bat + "doesn't exist");
-  if (!fs::exists(pkg2zip_bat))
-    throw std::runtime_error((std::string)pkg2zip_bat + "doesn't exist");
-  if (!fs::exists(pkg2zip_exe))
-    throw std::runtime_error((std::string)pkg2zip_exe + "doesn't exist");
+void WeSession::CheckPKG2ZIP() {
+  if (!fs::exists(zip2pkgBAT))
+    throw std::runtime_error((std::string)zip2pkgBAT + "doesn't exist");
+  if (!fs::exists(pkg2zipBAT))
+    throw std::runtime_error((std::string)pkg2zipBAT + "doesn't exist");
+  if (!fs::exists(pkg2zipEXE))
+    throw std::runtime_error((std::string)pkg2zipEXE + "doesn't exist");
 }
 
 std::string WeSession::GetpathToWorkshop() const { return pathToWorkshop; }
 std::string WeSession::GetPathToMyProjects() const { return pathToMyProjects; }
-void WeSession::AddItem(const std::string& addProject) {
-  recordedItems.insert(addProject);
+void WeSession::AddItem(const std::string &addProject) {
+  recordedItems.push_back(addProject);
 }
 int WeSession::getLengthOfWorkshopPath() const { return lengthOfWorkshopPath; }
 int WeSession::GetProjectsAdded() const { return projectsAdded; }
@@ -148,10 +162,10 @@ void WeSession::IsCopyCon() {
       isCopy = choose;
       break;
     } else if (option == "copy") {
-      isCopy = copyAll;
+      isCopy = copy;
       break;
     } else if (option == "record") {
-      isCopy = recordAll;
+      isCopy = record;
       break;
     }
     std::cout << "Invalid option, please try again.\n";

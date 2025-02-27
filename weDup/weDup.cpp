@@ -1,26 +1,26 @@
 #include "WeSession.h"
 
 namespace fs = std::filesystem;
-enum answer { no, yes, alwaysNo, alwaysYes };
-void Start(WeSession&);
+void Start(WeSession &);
 void WeExists();
-bool CopyProject(const std::string&, WeSession&);
-void CopyFolder(const std::string&, const std::string&);
-void ProcessProjects(WeSession&);
-void DirExists(const std::string&);
-void Unpkg(const std::string&, const std::string&);
-void NotCopying(WeSession&, const std::string&, const std::string&);
-void RunSystemCommands(const std::string&);
-void SearchMenu(WeSession&);
-void Search(WeSession&, const char*&);
-const char* SearchTitleorDescription();
-void ToLowerLoop(std::string&);
-std::pair<std::string, std::string> FindTitleAndDescription(const std::string&, const std::string&);
+bool CopyProject(const std::string &, WeSession &);
+void CopyFolder(const std::string &, const std::string &);
+void ProcessProjects(WeSession &);
+void DirExists(const std::string &);
+void Unpkg(const std::string &, const std::string &);
+void NotCopying(WeSession &, const std::string &, const std::string &);
+void RunSystemCommands(const std::string &);
+void SearchMenu(WeSession &);
+void Search(WeSession &, const char *&);
+const char *SearchTitleorDescription();
+void ToLowerLoop(std::string &);
+TitleAndDescription FindTitleAndDescription(const std::string &, const std::string &);
 bool CompareTitles(const std::string_view, const std::string_view);
 
-void AddToWE(const std::string&, const std::string&, WeSession&);
+void AddToWE(const std::string &, const std::string &, WeSession &);
 void IsBadInput();
 // project == wallpaper
+
 int main() {
   try {
     WeSession paths;
@@ -50,18 +50,20 @@ void Start(WeSession &paths) {
   }
   }
 }
+
 void WeExists() {
-  if (!fs::exists(WE_txt)) {
+  if (!fs::exists(WeTXT)) {
     std::cout << "File does not exist, creating file...\n";
-    std::ofstream createWe(WE_txt);
+    std::ofstream createWe(WeTXT);
     if (!createWe) {
-        throw std::runtime_error("Failed to open WE.txt");
+      throw std::runtime_error("Failed to open WE.txt");
     }
     createWe.close();
   }
 }
+
 void ProcessProjects(WeSession &paths) {
-    // "Main Menu"
+  // "Main Menu"
   paths.IsCopyCon();
   std::string newProject{""};
   for (const auto &entry : fs::directory_iterator(paths.GetpathToWorkshop())) {
@@ -70,17 +72,18 @@ void ProcessProjects(WeSession &paths) {
                                      paths.getLengthOfWorkshopPath())};
     newProject = {
         pathOfNewProject.substr(paths.getLengthOfWorkshopPath(), checkLength)};
-    // gets the length and then removes the path except for the project number
+    // gets the length and then removes the path except for the project ID
     // and inserts it in newProject(this is for cleaner look mostly)
 
-    if (paths.GetIsCopy() == recordAll) {
-        if (!paths.SearchIfRecorded(newProject)) {
-            std::string title{ FindTitleAndDescription(paths.GetpathToWorkshop(), newProject).first };
-            AddToWE(newProject, title, paths);
-        }
-    }
-    else if (!paths.SearchIfRecorded(newProject))
-        CopyProject(newProject, paths);
+    if (paths.GetIsCopy() == record) {
+      if (!paths.SearchIfRecorded(newProject)) {
+        std::string title{
+            FindTitleAndDescription(paths.GetpathToWorkshop(), newProject)
+                .title};
+        AddToWE(newProject, title, paths);
+      }
+    } else if (!paths.SearchIfRecorded(newProject))
+      CopyProject(newProject, paths);
   }
 }
 
@@ -88,15 +91,16 @@ bool CopyProject(const std::string &addProject, WeSession &paths) {
 
   std::string pathToWorkshopProject{paths.GetpathToWorkshop() + "\\" +
                                     addProject};
-  std::string title{FindTitleAndDescription(paths.GetpathToWorkshop(), addProject).first};
+  std::string title{
+      FindTitleAndDescription(paths.GetpathToWorkshop(), addProject).title};
   std::string newProjectPath{paths.GetPathToMyProjects() + "\\" + title};
   static std::string ifShow{""};
   std::string isCopy{""};
   switch (paths.GetIsCopy()) {
   case choose: {
     // the title may sometimes be with some strange characters
-    // usually beacuse the terminal only shows ascii ones(basic english and numbers)
-    // unless you configured it to show all utf-8
+    // usually beacuse the terminal only shows ascii ones(basic english and
+    // numbers) unless you configured it to show all utf-8
 
     std::cout << "Would you like to copy the wallpaper: " << title
               << "\nChoose an option:\n"
@@ -112,19 +116,16 @@ bool CopyProject(const std::string &addProject, WeSession &paths) {
       ToLowerLoop(isCopy);
     }
     if (isCopy == "no") {
-        NotCopying(paths, addProject, title);
-        return false;
-    }
-    else if (isCopy == "yes")
+      NotCopying(paths, addProject, title);
+      return false;
+    } else
       break;
-    else
-      throw std::invalid_argument("Invalid ending while choosing to copy");
   }
-  case copyAll: {
+  case copy: {
     break;
   }
-  case recordAll: {
-    throw std::invalid_argument("Invalid ending in recordAll path");
+  case record: {
+    throw std::invalid_argument("Invalid ending in record path");
   }
   default: {
     throw std::invalid_argument("Invalid IsCopy value");
@@ -160,25 +161,25 @@ void Unpkg(const std::string &oldPathProject,
            const std::string &newProjectPath) {
   // gets all the paths to pkg and zip
   // then uses commands to copy the pkg, unpack it to a zip then uzip it
-  std::string pathToWorkshopProject_pkg{oldPathProject + "\\scene.pkg"};
-  std::string newProjectPath_pkg{newProjectPath + "\\scene.pkg"};
-  std::string pathToWorkshopProject_zip(oldPathProject + "\\scene.zip");
-  std::string newProjectPath_zip{newProjectPath + "\\scene.zip"};
-  std::string commandToUnpkg{"pkg2zip.exe -pkg2zip \"" + newProjectPath_pkg +
-                             "\" " + "\"" + newProjectPath_zip + "\""};
-  std::string commandToUnzip{"tar -xkvf \"" + newProjectPath_zip + "\" -C \"" +
+  std::string pathToWorkshopProjectPKG{oldPathProject + "\\scene.pkg"};
+  std::string newProjectPathPKG{newProjectPath + "\\scene.pkg"};
+  std::string pathToWorkshopProjectZIP(oldPathProject + "\\scene.zip");
+  std::string newProjectPathZIP{newProjectPath + "\\scene.zip"};
+  std::string commandToUnpkg{"pkg2zip.exe -pkg2zip \"" + newProjectPathPKG +
+                             "\" " + "\"" + newProjectPathZIP + "\""};
+  std::string commandToUnzip{"tar -xkvf \"" + newProjectPathZIP + "\" -C \"" +
                              newProjectPath + "\""};
-  if (!fs::exists(pathToWorkshopProject_pkg)) {
+  if (!fs::exists(pathToWorkshopProjectPKG)) {
     // if there is no scene.pkg
     if (fs::exists(oldPathProject + "\\gifscene.pkg")) {
       // if there is a gifscene.pkg
-      pathToWorkshopProject_pkg = oldPathProject + "\\gifscene.pkg";
-      newProjectPath_pkg = newProjectPath + "\\gifscene.pkg";
-      pathToWorkshopProject_zip = oldPathProject + "\\gifscene.zip";
-      newProjectPath_zip = newProjectPath + "\\gifscene.zip";
-      commandToUnpkg = "pkg2zip.exe -pkg2zip \"" + newProjectPath_pkg + "\" " +
-                       "\"" + newProjectPath_zip + "\"";
-      commandToUnzip = "tar -xvf \"" + newProjectPath_zip + "\" -C \"" +
+      pathToWorkshopProjectPKG = oldPathProject + "\\gifscene.pkg";
+      newProjectPathPKG = newProjectPath + "\\gifscene.pkg";
+      pathToWorkshopProjectZIP = oldPathProject + "\\gifscene.zip";
+      newProjectPathZIP = newProjectPath + "\\gifscene.zip";
+      commandToUnpkg = "pkg2zip.exe -pkg2zip \"" + newProjectPathPKG + "\" " +
+                       "\"" + newProjectPathZIP + "\"";
+      commandToUnzip = "tar -xvf \"" + newProjectPathZIP + "\" -C \"" +
                        newProjectPath + "\"";
     } else {
       // if there is no scene.pkg nor gifscene.pkg
@@ -188,8 +189,8 @@ void Unpkg(const std::string &oldPathProject,
 
   RunSystemCommands(commandToUnpkg);
   RunSystemCommands(commandToUnzip);
-  remove(newProjectPath_pkg.c_str());
-  remove(newProjectPath_zip.c_str());
+  remove(newProjectPathPKG.c_str());
+  remove(newProjectPathZIP.c_str());
   // deletes the .zip and .pkg file as they are no longer needed
 }
 
@@ -240,43 +241,45 @@ void RunSystemCommands(const std::string &command) {
   // honestly I barely know what is happening in this function
   // but it works
   std::cout << command << " runs\n";
-  STARTUPINFO si;
+  STARTUPINFOW si;
   PROCESS_INFORMATION pi;
   ZeroMemory(&si, sizeof(si));
   si.cb = sizeof(si);
   ZeroMemory(&pi, sizeof(pi));
-  LPSTR lpstr = const_cast<char *>(command.c_str());
-  int length = MultiByteToWideChar(CP_ACP, 0, lpstr, -1, NULL, 0);
+
+  int length = MultiByteToWideChar(CP_ACP, 0, command.c_str(), -1, NULL, 0);
   LPWSTR useForCommands = new wchar_t[length];
-  MultiByteToWideChar(CP_ACP, 0, lpstr, -1, useForCommands, length);
-  // Start the child process.
-  CreateProcess(NULL,           // No module name (use command line)
-                useForCommands, // Command line
-                NULL,           // Process handle not inheritable
-                NULL,           // Thread handle not inheritable
-                FALSE,          // Set handle inheritance to FALSE
-                0,              // No creation flags
-                NULL,           // Use parent's environment block
-                NULL,           // Use parent's starting directory
-                &si,            // Pointer to STARTUPINFO structure
-                &pi);           // Pointer to PROCESS_INFORMATION structure
+  MultiByteToWideChar(CP_ACP, 0, command.c_str(), -1, useForCommands, length);
 
-  // Wait until child process exits.
-  WaitForSingleObject(pi.hProcess, INFINITE);
-  // Close process and thread handles.
-  CloseHandle(pi.hProcess);
-  CloseHandle(pi.hThread);
+  // Start the child process with CreateProcessW
+  if (!CreateProcessW(NULL,           // No module name (use command line)
+                      useForCommands, // Wide-character command line
+                      NULL,           // Process handle not inheritable
+                      NULL,           // Thread handle not inheritable
+                      FALSE,          // Set handle inheritance to FALSE
+                      0,              // No creation flags
+                      NULL,           // Use parent's environment block
+                      NULL,           // Use parent's starting directory
+                      &si,            // Pointer to STARTUPINFOW structure
+                      &pi)) { // Pointer to PROCESS_INFORMATION structure
+    std::cerr << "CreateProcess failed (" << GetLastError() << ")\n";
+  } else {
+    // Wait until child process exits.
+    WaitForSingleObject(pi.hProcess, INFINITE);
+    // Close process and thread handles.
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+  }
 }
-
 void SearchMenu(WeSession &paths) {
-    std::string option{ "" };
-
-  std::cout
-      << "Choose an option:\n"
-         "1. 'skip' to skip search and go to Main menu\n"
-         "2. 'copy' to copy every project search finds\n"
-         "3. 'choose' to choose if to copy or not every project search finds\n"
-         "This is case insensitive Search in ENGLISH (bla == BLA)\n";
+  std::string option{""};
+  const char* whereToSearch = nullptr;
+  std::cout << "Choose an option:\n"
+               "1. 'skip' to skip search and go to Main menu\n"
+               "2. 'copy' to copy every project search finds\n"
+               "3. 'choose' to choose if to copy or not every project search "
+               "finds\n"
+               "This is case insensitive Search in ENGLISH (bla == BLA)\n";
   while (option != "skip" && option != "copy" && option != "choose") {
     std::getline(std::cin, option);
     IsBadInput();
@@ -285,8 +288,9 @@ void SearchMenu(WeSession &paths) {
       std::cout << "Returning to Main menu\n";
       break;
     } else if (option == "copy" || option == "choose") {
-      paths.SetIsCopy(option == "copy" ? copyAll : choose);
-      const char* whereToSearch = SearchTitleorDescription();
+      paths.SetIsCopy(option == "copy" ? copy : choose);
+      if (!whereToSearch)
+        whereToSearch = SearchTitleorDescription();
       Search(paths, whereToSearch);
 
       std::cout << "Returning to search menu\n";
@@ -303,9 +307,9 @@ void SearchMenu(WeSession &paths) {
   }
 }
 
-void Search(WeSession &paths, const char * &whereToSearch) {
+void Search(WeSession &paths, const char *&whereToSearch) {
   std::string newProject{""};
-  std::pair<std::string, std::string> tmpcheckProject{"", ""};
+  TitleAndDescription tmpcheckProject{"", ""};
   int found{0};
   int copied{0};
   bool matchFound = false;
@@ -323,16 +327,20 @@ void Search(WeSession &paths, const char * &whereToSearch) {
                                      paths.getLengthOfWorkshopPath())};
     newProject = {
         pathOfNewProject.substr(paths.getLengthOfWorkshopPath(), checkLength)};
-    tmpcheckProject = FindTitleAndDescription(paths.GetpathToWorkshop(), newProject);
-    ToLowerLoop(tmpcheckProject.first);
-    ToLowerLoop(tmpcheckProject.second);
-    matchFound = (whereToSearch == "Title" && CompareTitles(tmpcheckProject.first, checkProject)) ||
-        (whereToSearch == "Description" && CompareTitles(tmpcheckProject.second, checkProject)) ||
-        (whereToSearch == "TitleAndDescription" && (CompareTitles(tmpcheckProject.first, checkProject)
-            || CompareTitles(tmpcheckProject.second, checkProject)));
+    tmpcheckProject =
+        FindTitleAndDescription(paths.GetpathToWorkshop(), newProject);
+    ToLowerLoop(tmpcheckProject.title);
+    ToLowerLoop(tmpcheckProject.description);
+    matchFound = (whereToSearch == "Title" &&
+                  CompareTitles(tmpcheckProject.title, checkProject)) ||
+                 (whereToSearch == "Description" &&
+                  CompareTitles(tmpcheckProject.description, checkProject)) ||
+                 (whereToSearch == "TitleAndDescription" &&
+                  (CompareTitles(tmpcheckProject.title, checkProject) ||
+                   CompareTitles(tmpcheckProject.description, checkProject)));
     if (matchFound) {
       ++found;
-      if (paths.GetIsCopy() == choose || paths.GetIsCopy() == copyAll) {
+      if (paths.GetIsCopy() == choose || paths.GetIsCopy() == copy) {
         if (CopyProject(newProject, paths)) {
           ++copied;
         }
@@ -342,36 +350,33 @@ void Search(WeSession &paths, const char * &whereToSearch) {
     }
   }
 
-  std::cout << "Search finished\Projects found: " << copied
-            << "\Projects copied: " << found << "\n";
+  std::cout << "Search finished\nProjects found: " << found
+            << "\nProjects copied: " << copied << "\n";
 }
-const char * SearchTitleorDescription() {
-    std::cout << "Choose what to search for:\n"
-        << "1. 'title' to search title only\n"
-        << "2. 'description' to search description only\n"
-        << "3. 'both' to search both\n";
-    std::cout << "*Note: this shows only once per session\n";
-    std::cout << "Please enter your choice: ";
+const char *SearchTitleorDescription() {
+  std::cout << "Choose what to search for:\n"
+            << "1. 'title' to search title only\n"
+            << "2. 'description' to search description only\n"
+            << "3. 'both' to search both\n";
+  std::cout << "*Note: this shows only once per session\n";
+  std::cout << "Please enter your choice: ";
 
-    std::string option;
-    std::getline(std::cin, option); 
+  std::string option;
+  std::getline(std::cin, option);
+  IsBadInput();
+  ToLowerLoop(option);
+  while (option != "title" && option != "description" && option != "both") {
+    std::cout << "invalid command, please enter again\n";
+    std::getline(std::cin, option);
     IsBadInput();
     ToLowerLoop(option);
-    while (option != "title" && option != "description" && option != "both") {
-        std::cout << "invalid command, please enter again\n";
-        std::getline(std::cin, option);
-        IsBadInput();
-        ToLowerLoop(option);
-    }
-    if (option == "title") {
-        return "Title";
-    }
-    else if (option == "description") {
-        return "Description";
-    }
-    else if (option == "both") {
-        return "TitleAndDescription";
-    }
+  }
+  if (option == "title") 
+    return "Title";
+  else if (option == "description") 
+    return "Description";
+  else
+    return "TitleAndDescription";
 }
 void ToLowerLoop(std::string &toLower) {
   // used for case insensitive search
@@ -382,84 +387,73 @@ void ToLowerLoop(std::string &toLower) {
   }
 }
 
-std::pair<std::string, std::string> FindTitleAndDescription(const std::string& path, const std::string& project) {
-    std::string jsonPath{ path + "\\" + project + "\\project.json" };
-    std::ifstream projectName(jsonPath);
-    if (!projectName.is_open()) {
-        throw std::runtime_error("Unable to open file: " + jsonPath);
+
+TitleAndDescription FindTitleAndDescription(const std::string &path, const std::string &project) {
+  std::string jsonPath{path + "\\" + project + "\\project.json"};
+  std::ifstream projectName(jsonPath);
+  if (!projectName) {
+    throw std::runtime_error("Unable to open file: " + jsonPath);
+  }
+
+  std::string currentLine{""};
+  std::string title = {""};
+  std::string description = {""};
+
+  while (std::getline(projectName, currentLine)) {
+    if (currentLine.find("\"description\" :") != std::string::npos
+        || currentLine.find("\"title\" :") != std::string::npos) {
+      // Removes all double quotes
+      currentLine.erase(
+          std::remove(currentLine.begin(), currentLine.end(), '\"'),
+          currentLine.end());
+
+      // Removes all backslashes
+      currentLine.erase(
+          std::remove(currentLine.begin(), currentLine.end(), '\\'),
+          currentLine.end());
+
+      // Removes "description :" or "title :"
+      size_t colonPos = currentLine.find(":");
+      if (colonPos == std::string::npos) {
+        throw std::invalid_argument("Invalid char missing: Missing ':' in " +
+                                    jsonPath); // shouldn't happen but jsut in case they change something 
+      }
+      if (currentLine.find("description :") != std::string::npos) {
+          description = currentLine.substr(colonPos + 1);
+
+          // Removes the ","
+          if (!description.empty()) {
+              description.pop_back();
+          }
+
+          // Removes all spaces and tabs before the first character
+          size_t firstNonSpace = description.find_first_not_of(" \t");
+          if (firstNonSpace != std::string::npos) {
+              description = description.substr(firstNonSpace);
+          }
+      }
+      else {
+          title = currentLine.substr(colonPos + 1);
+
+          // Removes the ","
+          if (!title.empty()) {
+              title.pop_back();
+          }
+          // Removes all spaces and tabs before the first character
+          size_t firstNonSpace = title.find_first_not_of(" \t");
+          if (firstNonSpace != std::string::npos) {
+              title = title.substr(firstNonSpace);
+          }
+          TitleAndDescription temp(title, description);
+          return temp;
+      }
     }
-
-    std::string currentLine{""};
-    std::string title = {""};
-    std::string description = {""};
-
-    while (std::getline(projectName, currentLine)) {
-        if (currentLine.find("\"description\" :") != std::string::npos) {
-            // Removes all double quotes
-            currentLine.erase(
-                std::remove(currentLine.begin(), currentLine.end(), '\"'),
-                currentLine.end());
-
-            // Removes all backslashes
-            currentLine.erase(
-                std::remove(currentLine.begin(), currentLine.end(), '\\'),
-                currentLine.end());
-
-            // Removes "description :"
-            size_t colonPos = currentLine.find(":");
-            if (colonPos == std::string::npos) {
-                throw std::invalid_argument("Invalid char missing: Missing ':' in " + jsonPath);
-            }
-            description = currentLine.substr(colonPos + 1);
-
-            // Removes the ","
-            if (!description.empty()) {
-                description.pop_back();
-            }
-
-            // Removes all spaces and tabs before the first character
-            size_t firstNonSpace = description.find_first_not_of(" \t");
-            if (firstNonSpace != std::string::npos) {
-                description = description.substr(firstNonSpace);
-            }
-        }
-        else if (currentLine.find("\"title\" :") != std::string::npos) {
-            // Removes all double quotes
-            currentLine.erase(
-                std::remove(currentLine.begin(), currentLine.end(), '\"'),
-                currentLine.end());
-
-            // Removes all backslashes
-            currentLine.erase(
-                std::remove(currentLine.begin(), currentLine.end(), '\\'),
-                currentLine.end());
-
-            // Removes "title :"
-            size_t colonPos = currentLine.find(":");
-            if (colonPos == std::string::npos) {
-                throw std::invalid_argument("Invalid char missing: Missing ':' in " + jsonPath);
-            }
-            title = currentLine.substr(colonPos + 1);
-
-            // Removes the ","
-            if (!title.empty()) {
-                title.pop_back();
-            }
-
-            // Removes all spaces and tabs before the first character
-            size_t firstNonSpace = title.find_first_not_of(" \t");
-            if (firstNonSpace != std::string::npos) {
-                title = title.substr(firstNonSpace);
-            }
-            return { title, description };
-        }
-
-    }
-    throw std::invalid_argument("Invalid Ending: Title not found in " + jsonPath); 
+  }
+  throw std::invalid_argument("Invalid Ending: Title not found in " + jsonPath);
 }
 
 bool CompareTitles(std::string_view project, std::string_view toProject) {
-    return project.find(toProject) != std::string_view::npos;
+  return project.find(toProject) != std::string_view::npos;
 }
 void IsBadInput() {
   if (std::cin.fail()) {
@@ -468,12 +462,11 @@ void IsBadInput() {
 }
 void AddToWE(const std::string &project, const std::string &title,
              WeSession &paths) {
-   paths.AddItem(project);
-   std::fstream addToWe(WE_txt, std::ios::app);
-   if (!addToWe) {
-       throw std::runtime_error("Failed to open WE.txt");
-   }
-   addToWe << "\n" << project << " - " << title;
-   addToWe.close();
-
+  paths.AddItem(project);
+  std::fstream addToWe(WeTXT, std::ios::app);
+  if (!addToWe) {
+    throw std::runtime_error("Failed to open WE.txt");
+  }
+  addToWe << "\n" << project << " - " << title;
+  addToWe.close();
 }
