@@ -14,11 +14,26 @@ WeSession::WeSession() {
   CheckPaths(defaultProjectsLocation, projectsTXT);
   CheckPaths(defaultWorkshopocation, workshopTXT);
   lengthOfWorkshopPath = (static_cast<int>(pathToWorkshop.length()) + 1);
-
+  ReserveVector();
   PutintoVector();
   CheckRePKG();
 }
-
+void WeSession::ReserveVector() {
+    if (!fs::exists(WeTXT)) {
+        return;
+    }
+    std::fstream WeFile(WeTXT);
+    std::string currentLine{ "" };
+    int i{ 0 };
+    if (!WeFile) {
+        throw std::runtime_error("Failed to open WE.txt");
+    }
+    while (std::getline(WeFile, currentLine)) {
+        ++i;
+    }
+    WeFile.close();
+	recordedItems.reserve(i);
+}
 void WeSession::PutintoVector() {
   if (!fs::exists(WeTXT)) {
     return;

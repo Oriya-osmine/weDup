@@ -27,6 +27,7 @@ private:
   CopyTypes isCopy = copy;
 
 private:
+  void ReserveVector();
   void PutintoVector();
   void CheckPaths(const char *, const char *);
   void Writepaths(const char *, const char *);
