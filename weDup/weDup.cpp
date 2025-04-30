@@ -67,7 +67,7 @@ void ProcessProjects(WeSession &paths) {
   // "Main Menu"
   paths.IsCopyCon();
   std::string newProject{""};
-  for (const auto &entry : fs::directory_iterator(paths.GetpathToWorkshop())) {
+  for (const auto &entry : fs::directory_iterator(paths.GetPathToWorkshop())) {
     std::string pathOfNewProject{entry.path().string()};
     int checkLength{static_cast<int>(pathOfNewProject.length() -
                                      paths.getLengthOfWorkshopPath())};
@@ -79,7 +79,7 @@ void ProcessProjects(WeSession &paths) {
     if (paths.GetIsCopy() == record) {
       if (!paths.SearchIfRecorded(newProject)) {
         std::string title{
-            FindTitleAndDescription(paths.GetpathToWorkshop(), newProject)
+            FindTitleAndDescription(paths.GetPathToWorkshop(), newProject)
                 .title};
         AddToWE(newProject, title, paths);
       }
@@ -90,10 +90,10 @@ void ProcessProjects(WeSession &paths) {
 
 bool CopyProject(const std::string &addProject, WeSession &paths) {
 
-  std::string pathToWorkshopProject{paths.GetpathToWorkshop() + "\\" +
+  std::string pathToWorkshopProject{paths.GetPathToWorkshop() + "\\" +
                                     addProject};
   std::string title{
-      FindTitleAndDescription(paths.GetpathToWorkshop(), addProject).title};
+      FindTitleAndDescription(paths.GetPathToWorkshop(), addProject).title};
   std::string newProjectPath{paths.GetPathToMyProjects() + "\\" + title};
   static std::string ifShow{""};
   std::string isCopy{""};
@@ -312,14 +312,14 @@ void Search(WeSession &paths, const char *&whereToSearch) {
   std::getline(std::cin, checkProject);
   IsBadInput();
   ToLowerLoop(checkProject);
-  for (const auto &entry : fs::directory_iterator(paths.GetpathToWorkshop())) {
+  std::string pathToWorkshop = paths.GetPathToWorkshop();
+  int lengthOfWorkshopPath = paths.getLengthOfWorkshopPath();
+  for (const auto &entry : fs::directory_iterator(pathToWorkshop)) {
     std::string pathOfNewProject{entry.path().string()};
-    int checkLength{static_cast<int>(pathOfNewProject.length() -
-                                     paths.getLengthOfWorkshopPath())};
-    newProject = {
-        pathOfNewProject.substr(paths.getLengthOfWorkshopPath(), checkLength)};
-    tmpcheckProject =
-        FindTitleAndDescription(paths.GetpathToWorkshop(), newProject);
+    int checkLength{
+        static_cast<int>(pathOfNewProject.length() - lengthOfWorkshopPath)};
+    newProject = {pathOfNewProject.substr(lengthOfWorkshopPath, checkLength)};
+    tmpcheckProject = FindTitleAndDescription(pathToWorkshop, newProject);
     ToLowerLoop(tmpcheckProject.title);
     ToLowerLoop(tmpcheckProject.description);
     matchFound = (whereToSearch == "Title" &&
@@ -408,7 +408,7 @@ TitleAndDescription FindTitleAndDescription(const std::string &path,
       size_t colonPos = currentLine.find(":");
       if (colonPos == std::string::npos) {
         throw std::invalid_argument("Invalid char missing: Missing ':' in " +
-                                    jsonPath); // shouldn't happen but jsut in
+                                    jsonPath); // shouldn't happen but just in
                                                // case they change something
       }
       if (currentLine.find("description :") != std::string::npos) {

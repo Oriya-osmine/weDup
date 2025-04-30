@@ -14,10 +14,10 @@ WeSession::WeSession() {
   CheckPaths(defaultProjectsLocation, projectsTXT);
   CheckPaths(defaultWorkshopocation, workshopTXT);
   lengthOfWorkshopPath = (static_cast<int>(pathToWorkshop.length()) + 1);
-  PutintoSet();
+  PutintoVector();
   CheckRePKG();
 }
-void WeSession::PutintoSet() {
+void WeSession::PutintoVector() {
   if (!fs::exists(WeTXT)) {
     return;
   }
@@ -44,7 +44,7 @@ void WeSession::CheckPaths(const char *const path, const char *const pathTXT) {
   } else {
     std::fstream WePaths(pathTXT, std::ios::in);
     if (!WePaths) {
-        throw std::runtime_error("Failed to open " + std::string(pathTXT));
+      throw std::runtime_error("Failed to open " + std::string(pathTXT));
     }
     pathTXT == projectsTXT
         ? pathToMyProjects.assign(std::istreambuf_iterator<char>(WePaths),
@@ -56,9 +56,8 @@ void WeSession::CheckPaths(const char *const path, const char *const pathTXT) {
 }
 void WeSession::Writepaths(const char *const path, const char *const pathTXT) {
   std::string MpOrWs = pathTXT == projectsTXT ? "Myprojects" : "Workshop";
-  std::string DefaultMporWslocation = pathTXT == projectsTXT
-                                          ? defaultProjectsLocation
-                                          : defaultWorkshopocation;
+  std::string DefaultMporWslocation =
+      pathTXT == projectsTXT ? defaultProjectsLocation : defaultWorkshopocation;
 
   std::cout << "We have detected your" << MpOrWs << " content location is in\n"
             << DefaultMporWslocation << "\nChoose an option:\n"
@@ -76,7 +75,7 @@ void WeSession::Writepaths(const char *const path, const char *const pathTXT) {
     } else if (option == "yes") {
       std::ofstream WePaths(pathTXT, std::ios::out);
       if (!WePaths) {
-          throw std::runtime_error("Failed to open " + std::string(pathTXT));
+        throw std::runtime_error("Failed to open " + std::string(pathTXT));
       }
       WePaths << path;
       WePaths.close();
@@ -102,7 +101,7 @@ void WeSession::setPathsFromUser(const char *const pathTXT) {
     std::getline(std::cin, pathToMyProjects);
     std::ofstream WePaths(pathTXT, std::ios::out);
     if (!WePaths) {
-        throw std::runtime_error("Failed to open " + std::string(pathTXT));
+      throw std::runtime_error("Failed to open " + std::string(pathTXT));
     }
     WePaths << pathToMyProjects;
     WePaths.close();
@@ -119,7 +118,7 @@ void WeSession::setPathsFromUser(const char *const pathTXT) {
     std::getline(std::cin, pathToWorkshop);
     std::ofstream WePaths(pathTXT, std::ios::out);
     if (!WePaths) {
-        throw std::runtime_error("Failed to open " + std::string(pathTXT));
+      throw std::runtime_error("Failed to open " + std::string(pathTXT));
     }
     WePaths << pathToWorkshop;
     WePaths.close();
@@ -133,10 +132,10 @@ void WeSession::CheckRePKG() {
     throw std::runtime_error((std::string)RePKGEXE + "doesn't exist");
 }
 
-std::string WeSession::GetpathToWorkshop() const { return pathToWorkshop; }
+std::string WeSession::GetPathToWorkshop() const { return pathToWorkshop; }
 std::string WeSession::GetPathToMyProjects() const { return pathToMyProjects; }
 void WeSession::AddItem(const std::string &addProject) {
-  recordedItems.push_back(addProject);
+  recordedItems.emplace_back(addProject);
 }
 int WeSession::getLengthOfWorkshopPath() const { return lengthOfWorkshopPath; }
 int WeSession::GetProjectsAdded() const { return projectsAdded; }
