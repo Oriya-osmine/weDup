@@ -14,11 +14,10 @@ WeSession::WeSession() {
   CheckPaths(defaultProjectsLocation, projectsTXT);
   CheckPaths(defaultWorkshopocation, workshopTXT);
   lengthOfWorkshopPath = (static_cast<int>(pathToWorkshop.length()) + 1);
-  ReserveVector();
-  PutintoVector();
+  ReserveOrPutInVector(true);
   CheckRePKG();
 }
-void WeSession::ReserveVector() {
+void WeSession::ReserveOrPutInVector(bool RorP) {
     if (!fs::exists(WeTXT)) {
         return;
     }
@@ -28,26 +27,21 @@ void WeSession::ReserveVector() {
     if (!WeFile) {
         throw std::runtime_error("Failed to open WE.txt");
     }
-    while (std::getline(WeFile, currentLine)) {
-        ++i;
-    }
+	if (!RorP) {
+		while (std::getline(WeFile, currentLine)) {
+			AddItem(currentLine);
+		}
+	}
+	else {
+		while (std::getline(WeFile, currentLine)) {
+			++i;
+		}
+        recordedItems.reserve(i);
+		ReserveOrPutInVector(false);
+	}
     WeFile.close();
-	recordedItems.reserve(i);
 }
-void WeSession::PutintoVector() {
-  if (!fs::exists(WeTXT)) {
-    return;
-  }
-  std::fstream WeFile(WeTXT);
-  std::string currentLine{""};
-  if (!WeFile) {
-    throw std::runtime_error("Failed to open WE.txt");
-  }
-  while (std::getline(WeFile, currentLine)) {
-    AddItem(currentLine);
-  }
-  WeFile.close();
-}
+
 void WeSession::CheckPaths(const char *const path, const char *const pathTXT) {
 
   if (!fs::exists(pathTXT)) {
@@ -151,8 +145,11 @@ void WeSession::CheckRePKG() {
 
 std::string WeSession::GetPathToWorkshop() const { return pathToWorkshop; }
 std::string WeSession::GetPathToMyProjects() const { return pathToMyProjects; }
-void WeSession::AddItem(const std::string &addProject) {
+bool  WeSession::AddItem(const std::string &addProject) {
+  if (SearchIfRecorded(addProject))
+		return false;
   recordedItems.emplace_back(addProject);
+  return true;
 }
 int WeSession::getLengthOfWorkshopPath() const { return lengthOfWorkshopPath; }
 int WeSession::GetProjectsAdded() const { return projectsAdded; }

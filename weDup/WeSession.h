@@ -27,8 +27,7 @@ private:
   CopyTypes isCopy = copy;
 
 private:
-  void ReserveVector();
-  void PutintoVector();
+  void ReserveOrPutInVector(bool);
   void CheckPaths(const char *, const char *);
   void Writepaths(const char *, const char *);
   void setPathsFromUser(const char *);
@@ -45,7 +44,7 @@ public:
   void subtractprojectsAdded();
   void AddProjectsAdded();
   int getLengthOfWorkshopPath() const;
-  void AddItem(const std::string &);
+  bool AddItem(const std::string &);
   bool SearchIfRecorded(const std::string &) const;
 };
 

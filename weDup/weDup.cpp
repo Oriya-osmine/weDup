@@ -78,10 +78,7 @@ void ProcessProjects(WeSession &paths) {
 
     if (paths.GetIsCopy() == record) {
       if (!paths.SearchIfRecorded(newProject)) {
-        std::string title{
-            FindTitleAndDescription(paths.GetPathToWorkshop(), newProject)
-                .title};
-        AddToWE(newProject, title, paths);
+        AddToWE(newProject, FindTitleAndDescription(paths.GetPathToWorkshop(), newProject).title, paths);
       }
     } else if (!paths.SearchIfRecorded(newProject))
       CopyProject(newProject, paths);
@@ -454,11 +451,13 @@ void IsBadInput() {
 }
 void AddToWE(const std::string &project, const std::string &title,
              WeSession &paths) {
-  paths.AddItem(project);
-  std::fstream addToWe(WeTXT, std::ios::app);
-  if (!addToWe) {
-    throw std::runtime_error("Failed to open WE.txt");
-  }
-  addToWe << "\n" << project << " - " << title;
-  addToWe.close();
+
+    if (paths.AddItem(project)) {
+        std::fstream addToWe(WeTXT, std::ios::app);
+        if (!addToWe) {
+            throw std::runtime_error("Failed to open WE.txt");
+        }
+        addToWe << "\n" << project << " - " << title;
+        addToWe.close();
+    }
 }
