@@ -6,6 +6,7 @@
 #include <vector>
 #include <windows.h>
 
+extern const char* const WeTXT;
 extern void ToLowerLoop(std::string &toLower);
 extern void IsBadInput();
 enum CopyTypes { choose, copy, record, skip };

@@ -14,9 +14,11 @@ WeSession::WeSession() {
   CheckPaths(defaultProjectsLocation, projectsTXT);
   CheckPaths(defaultWorkshopocation, workshopTXT);
   lengthOfWorkshopPath = (static_cast<int>(pathToWorkshop.length()) + 1);
+
   PutintoVector();
   CheckRePKG();
 }
+
 void WeSession::PutintoVector() {
   if (!fs::exists(WeTXT)) {
     return;
