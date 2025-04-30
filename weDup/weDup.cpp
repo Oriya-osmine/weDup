@@ -4,17 +4,18 @@ namespace fs = std::filesystem;
 void Start(WeSession &);
 void WeExists();
 bool CopyProject(const std::string &, WeSession &);
-void CopyFolder(const std::string &, const std::string &);
 void ProcessProjects(WeSession &);
 void DirExists(const std::string &);
-void Unpkg(const std::string &, const std::string &);
+void UnPKG(const std::string &, const std::string &);
+void copyPreviewGif(const std::string &, const std::string &);
 void NotCopying(WeSession &, const std::string &, const std::string &);
 void RunSystemCommands(const std::string &);
 void SearchMenu(WeSession &);
 void Search(WeSession &, const char *&);
 const char *SearchTitleorDescription();
 void ToLowerLoop(std::string &);
-TitleAndDescription FindTitleAndDescription(const std::string &, const std::string &);
+TitleAndDescription FindTitleAndDescription(const std::string &,
+                                            const std::string &);
 bool CompareTitles(const std::string_view, const std::string_view);
 
 void AddToWE(const std::string &, const std::string &, WeSession &);
@@ -134,14 +135,13 @@ bool CopyProject(const std::string &addProject, WeSession &paths) {
 
   DirExists(newProjectPath);
 
-  CopyFolder(pathToWorkshopProject, newProjectPath);
-
-  Unpkg(pathToWorkshopProject, newProjectPath);
+  UnPKG(pathToWorkshopProject, newProjectPath);
 
   AddToWE(addProject, title, paths);
   paths.AddProjectsAdded();
   return true;
 }
+
 void DirExists(const std::string &Directory) {
   if (fs::exists(Directory)) {
 
@@ -151,49 +151,40 @@ void DirExists(const std::string &Directory) {
         "directories");
   }
 }
-void CopyFolder(const std::string &oldPath, const std::string &newPath) {
-  fs::copy(oldPath.c_str(), newPath.c_str(),
-           std::filesystem::copy_options::overwrite_existing |
-               std::filesystem::copy_options::recursive);
-}
 
-void Unpkg(const std::string &oldPathProject,
+void UnPKG(const std::string &oldPathProject,
            const std::string &newProjectPath) {
   // gets all the paths to pkg and zip
   // then uses commands to copy the pkg, unpack it to a zip then uzip it
-  std::string pathToWorkshopProjectPKG{oldPathProject + "\\scene.pkg"};
-  std::string newProjectPathPKG{newProjectPath + "\\scene.pkg"};
-  std::string pathToWorkshopProjectZIP(oldPathProject + "\\scene.zip");
-  std::string newProjectPathZIP{newProjectPath + "\\scene.zip"};
-  std::string commandToUnpkg{"pkg2zip.exe -pkg2zip \"" + newProjectPathPKG +
-                             "\" " + "\"" + newProjectPathZIP + "\""};
-  std::string commandToUnzip{"tar -xkvf \"" + newProjectPathZIP + "\" -C \"" +
-                             newProjectPath + "\""};
-  if (!fs::exists(pathToWorkshopProjectPKG)) {
+  std::string scenePKG = "\\scene.pkg";
+
+  if (!fs::exists(oldPathProject + scenePKG)) {
     // if there is no scene.pkg
     if (fs::exists(oldPathProject + "\\gifscene.pkg")) {
       // if there is a gifscene.pkg
-      pathToWorkshopProjectPKG = oldPathProject + "\\gifscene.pkg";
-      newProjectPathPKG = newProjectPath + "\\gifscene.pkg";
-      pathToWorkshopProjectZIP = oldPathProject + "\\gifscene.zip";
-      newProjectPathZIP = newProjectPath + "\\gifscene.zip";
-      commandToUnpkg = "pkg2zip.exe -pkg2zip \"" + newProjectPathPKG + "\" " +
-                       "\"" + newProjectPathZIP + "\"";
-      commandToUnzip = "tar -xvf \"" + newProjectPathZIP + "\" -C \"" +
-                       newProjectPath + "\"";
+      scenePKG = "\\gifscene.pkg";
     } else {
       // if there is no scene.pkg nor gifscene.pkg
       return;
     }
   }
-
-  RunSystemCommands(commandToUnpkg);
-  RunSystemCommands(commandToUnzip);
-  remove(newProjectPathPKG.c_str());
-  remove(newProjectPathZIP.c_str());
-  // deletes the .zip and .pkg file as they are no longer needed
+  std::string pathToWorkshopProjectPKG{oldPathProject + scenePKG};
+  std::string commandToUnPKG{"RePKG.exe extract -c -o \"" + newProjectPath +
+                             "\" " + "\"" + pathToWorkshopProjectPKG + "\""};
+  RunSystemCommands(commandToUnPKG);
+  copyPreviewGif(
+      oldPathProject,
+      newProjectPath); // for some reason RePKG doesnt copy preview.gif
 }
+void copyPreviewGif(const std::string &oldPathProject,
+                    const std::string &newProjectPath) {
+  fs::path source = oldPathProject + "\\preview.gif";
+  fs::path destination = newProjectPath + "\\preview.gif";
 
+  if (fs::exists(source)) {
+    fs::copy_file(source, destination, fs::copy_options::overwrite_existing);
+  }
+}
 void NotCopying(WeSession &paths, const std::string &addProject,
                 const std::string &title) {
   static std::string ifShow{""};
@@ -273,7 +264,7 @@ void RunSystemCommands(const std::string &command) {
 }
 void SearchMenu(WeSession &paths) {
   std::string option{""};
-  const char* whereToSearch = nullptr;
+  const char *whereToSearch = nullptr;
   std::cout << "Choose an option:\n"
                "1. 'skip' to skip search and go to Main menu\n"
                "2. 'copy' to copy every project search finds\n"
@@ -371,13 +362,14 @@ const char *SearchTitleorDescription() {
     IsBadInput();
     ToLowerLoop(option);
   }
-  if (option == "title") 
+  if (option == "title")
     return "Title";
-  else if (option == "description") 
+  else if (option == "description")
     return "Description";
   else
     return "TitleAndDescription";
 }
+
 void ToLowerLoop(std::string &toLower) {
   // used for case insensitive search
   for (auto &c : toLower) {
@@ -387,8 +379,8 @@ void ToLowerLoop(std::string &toLower) {
   }
 }
 
-
-TitleAndDescription FindTitleAndDescription(const std::string &path, const std::string &project) {
+TitleAndDescription FindTitleAndDescription(const std::string &path,
+                                            const std::string &project) {
   std::string jsonPath{path + "\\" + project + "\\project.json"};
   std::ifstream projectName(jsonPath);
   if (!projectName) {
@@ -400,8 +392,8 @@ TitleAndDescription FindTitleAndDescription(const std::string &path, const std::
   std::string description = {""};
 
   while (std::getline(projectName, currentLine)) {
-    if (currentLine.find("\"description\" :") != std::string::npos
-        || currentLine.find("\"title\" :") != std::string::npos) {
+    if (currentLine.find("\"description\" :") != std::string::npos ||
+        currentLine.find("\"title\" :") != std::string::npos) {
       // Removes all double quotes
       currentLine.erase(
           std::remove(currentLine.begin(), currentLine.end(), '\"'),
@@ -416,36 +408,36 @@ TitleAndDescription FindTitleAndDescription(const std::string &path, const std::
       size_t colonPos = currentLine.find(":");
       if (colonPos == std::string::npos) {
         throw std::invalid_argument("Invalid char missing: Missing ':' in " +
-                                    jsonPath); // shouldn't happen but jsut in case they change something 
+                                    jsonPath); // shouldn't happen but jsut in
+                                               // case they change something
       }
       if (currentLine.find("description :") != std::string::npos) {
-          description = currentLine.substr(colonPos + 1);
+        description = currentLine.substr(colonPos + 1);
 
-          // Removes the ","
-          if (!description.empty()) {
-              description.pop_back();
-          }
+        // Removes the ","
+        if (!description.empty()) {
+          description.pop_back();
+        }
 
-          // Removes all spaces and tabs before the first character
-          size_t firstNonSpace = description.find_first_not_of(" \t");
-          if (firstNonSpace != std::string::npos) {
-              description = description.substr(firstNonSpace);
-          }
-      }
-      else {
-          title = currentLine.substr(colonPos + 1);
+        // Removes all spaces and tabs before the first character
+        size_t firstNonSpace = description.find_first_not_of(" \t");
+        if (firstNonSpace != std::string::npos) {
+          description = description.substr(firstNonSpace);
+        }
+      } else {
+        title = currentLine.substr(colonPos + 1);
 
-          // Removes the ","
-          if (!title.empty()) {
-              title.pop_back();
-          }
-          // Removes all spaces and tabs before the first character
-          size_t firstNonSpace = title.find_first_not_of(" \t");
-          if (firstNonSpace != std::string::npos) {
-              title = title.substr(firstNonSpace);
-          }
-          TitleAndDescription temp(title, description);
-          return temp;
+        // Removes the ","
+        if (!title.empty()) {
+          title.pop_back();
+        }
+        // Removes all spaces and tabs before the first character
+        size_t firstNonSpace = title.find_first_not_of(" \t");
+        if (firstNonSpace != std::string::npos) {
+          title = title.substr(firstNonSpace);
+        }
+        TitleAndDescription temp(title, description);
+        return temp;
       }
     }
   }

@@ -8,16 +8,14 @@ const char *const defaultWorkshopocation =
 const char *const projectsTXT = "PathToMyprojects.txt";
 const char *const workshopTXT = "PathToWorkshop.txt";
 const char *const WeTXT = "WE.txt";
-const char *const zip2pkgBAT = "!zip2pkg.bat";
-const char *const pkg2zipBAT = "!pkg2zip.bat";
-const char *const pkg2zipEXE = "pkg2zip.exe";
+const char *const RePKGEXE = "RePKG.exe";
 
 WeSession::WeSession() {
   CheckPaths(defaultProjectsLocation, projectsTXT);
   CheckPaths(defaultWorkshopocation, workshopTXT);
   lengthOfWorkshopPath = (static_cast<int>(pathToWorkshop.length()) + 1);
   PutintoSet();
-  CheckPKG2ZIP();
+  CheckRePKG();
 }
 void WeSession::PutintoSet() {
   if (!fs::exists(WeTXT)) {
@@ -130,13 +128,9 @@ void WeSession::setPathsFromUser(const char *const pathTXT) {
   }
 }
 
-void WeSession::CheckPKG2ZIP() {
-  if (!fs::exists(zip2pkgBAT))
-    throw std::runtime_error((std::string)zip2pkgBAT + "doesn't exist");
-  if (!fs::exists(pkg2zipBAT))
-    throw std::runtime_error((std::string)pkg2zipBAT + "doesn't exist");
-  if (!fs::exists(pkg2zipEXE))
-    throw std::runtime_error((std::string)pkg2zipEXE + "doesn't exist");
+void WeSession::CheckRePKG() {
+  if (!fs::exists(RePKGEXE))
+    throw std::runtime_error((std::string)RePKGEXE + "doesn't exist");
 }
 
 std::string WeSession::GetpathToWorkshop() const { return pathToWorkshop; }

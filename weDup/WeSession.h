@@ -38,7 +38,7 @@ private:
   void CheckPaths(const char *, const char *);
   void Writepaths(const char *, const char *);
   void setPathsFromUser(const char *);
-  void CheckPKG2ZIP();
+  void CheckRePKG();
 
 public:
   WeSession();
