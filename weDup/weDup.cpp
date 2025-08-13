@@ -167,7 +167,7 @@ void UnPKG(const std::string& oldPathProject,
 		}
 	}
 	std::string pathToWorkshopProjectPKG{ oldPathProject + scenePKG };
-	std::string commandToUnPKG{ "RePKG.exe extract -c -o \"" + newProjectPath +
+	std::string commandToUnPKG{ "RePKG.exe extract --no-tex-convert -c -o \"" + newProjectPath +
 							   "\" " + "\"" + pathToWorkshopProjectPKG + "\"" };
 	RunSystemCommands(commandToUnPKG);
 	copyPreviewGif(
